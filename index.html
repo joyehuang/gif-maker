@@ -492,9 +492,20 @@
                     <div class="flex justify-center bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAKQCAYAAAB24j9AAAAA')] p-2 border rounded canvas-container">
                         <img id="resultImage" class="max-w-full h-auto object-contain" alt="生成的GIF" />
                     </div>
-                    <a id="downloadLink" download="sticker.gif" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition shadow">
-                        📥 下载 GIF
-                    </a>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a id="downloadLink" download="sticker.gif" class="btn btn-success gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                            下载
+                        </a>
+                        <button id="shareBtn" class="btn btn-primary gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                            </svg>
+                            分享
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -555,6 +566,7 @@
         const resultContainer = document.getElementById('resultContainer');
         const resultImage = document.getElementById('resultImage');
         const downloadLink = document.getElementById('downloadLink');
+        const shareBtn = document.getElementById('shareBtn');
         const placeholderText = document.getElementById('placeholderText');
         const canvasWrapper = document.getElementById('canvasWrapper');
         const bgColorRadios = document.getElementsByName('bgColor');
@@ -942,13 +954,14 @@
                     const image = obj.image;
                     resultImage.src = image;
                     downloadLink.href = image;
+                    currentGifDataUrl = image; // Save for sharing
                     resultContainer.classList.remove('hidden');
                     // Hide slices if open to avoid clutter? Or keep both open? Keep both.
                     resultContainer.scrollIntoView({ behavior: 'smooth' });
                 } else {
                     alert("生成GIF失败，请重试");
                 }
-                
+
                 generateBtn.innerHTML = btnOriginalText;
                 generateBtn.disabled = false;
                 generateSlicesBtn.disabled = false;
@@ -1036,6 +1049,91 @@
 
             document.body.removeChild(textArea);
         }
+
+        // Share GIF to gallery
+        let currentGifDataUrl = null;
+
+        shareBtn.addEventListener('click', async () => {
+            if (!currentGifDataUrl) {
+                alert('没有可分享的 GIF');
+                return;
+            }
+
+            const originalText = shareBtn.innerHTML;
+            shareBtn.disabled = true;
+            shareBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> 上传中...';
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        gif: currentGifDataUrl,
+                        metadata: {
+                            rows: parseInt(rowsInput.value),
+                            cols: parseInt(colsInput.value),
+                            speed: parseInt(speedInput.value),
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    shareBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg> 已分享';
+                    shareBtn.classList.remove('btn-primary');
+                    shareBtn.classList.add('btn-success');
+
+                    // Refresh gallery
+                    setTimeout(() => {
+                        loadGallery();
+                    }, 1000);
+
+                    // Reset button after 3 seconds
+                    setTimeout(() => {
+                        shareBtn.innerHTML = originalText;
+                        shareBtn.classList.remove('btn-success');
+                        shareBtn.classList.add('btn-primary');
+                        shareBtn.disabled = false;
+                    }, 3000);
+                } else {
+                    throw new Error(data.error || '上传失败');
+                }
+            } catch (error) {
+                console.error('Share error:', error);
+                alert('分享失败：' + error.message);
+                shareBtn.innerHTML = originalText;
+                shareBtn.disabled = false;
+            }
+        });
+
+        // Load gallery from API
+        async function loadGallery() {
+            try {
+                const response = await fetch('/api/gallery?limit=2');
+                const data = await response.json();
+
+                if (data.success && data.gifs.length > 0) {
+                    // Update example images with latest uploads
+                    const examples = document.querySelectorAll('.example-card img');
+                    data.gifs.forEach((gif, index) => {
+                        if (examples[index]) {
+                            examples[index].src = gif.url;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load gallery:', error);
+                // Silent fail - use static examples as fallback
+            }
+        }
+
+        // Load gallery on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadGallery();
+        });
     </script>
 </body>
 </html>

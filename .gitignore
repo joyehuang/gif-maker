@@ -1,9 +1,18 @@
 # Vercel
 .vercel
 
+# Dependencies
+node_modules
+package-lock.json
+
 # macOS
 .DS_Store
 
 # Editor
 .vscode
 .idea
+
+# Environment variables
+.env
+.env.local
+.env*.local

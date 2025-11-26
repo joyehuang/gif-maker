@@ -1,0 +1,13 @@
+{
+  "name": "gif-maker",
+  "version": "1.0.0",
+  "description": "表情包切分合成工具",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@vercel/blob": "^0.23.4"
+  },
+  "devDependencies": {}
+}
