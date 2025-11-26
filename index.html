@@ -10,7 +10,7 @@
     <style>
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: hsl(210, 33%, 99%);
+            background: linear-gradient(135deg, hsl(200, 80%, 92%) 0%, hsl(210, 75%, 88%) 100%);
             color: hsl(240, 10%, 3.9%);
             min-height: 100vh;
         }
@@ -177,6 +177,71 @@
                 <div class="p-3 border-t border-color bg-muted">
                     <p class="text-sm font-medium text-muted">动态表情包示例 #2</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 生成帧动画 -->
+    <div class="mb-10 w-full max-w-5xl">
+        <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-sm border border-purple-200 p-6">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-2xl">🤖</span>
+                <h2 class="text-xl font-bold">AI 生成帧动画</h2>
+                <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-semibold">新功能</span>
+            </div>
+
+            <div class="bg-white rounded-lg p-4 mb-4 border border-purple-100">
+                <p class="text-sm text-muted mb-3">
+                    💡 使用 AI（如 Claude、ChatGPT、Gemini）生成可循环的帧动画，然后用本工具切分成 GIF！
+                </p>
+
+                <div class="space-y-3">
+                    <div class="flex gap-2 text-sm">
+                        <span class="font-semibold text-purple-600">步骤 1:</span>
+                        <span>准备一张角色贴纸图片</span>
+                    </div>
+                    <div class="flex gap-2 text-sm">
+                        <span class="font-semibold text-purple-600">步骤 2:</span>
+                        <span>复制下方 Prompt 给 AI，并上传你的角色图片</span>
+                    </div>
+                    <div class="flex gap-2 text-sm">
+                        <span class="font-semibold text-purple-600">步骤 3:</span>
+                        <span>AI 会生成一张 2×3 的帧动画图片（6帧）</span>
+                    </div>
+                    <div class="flex gap-2 text-sm">
+                        <span class="font-semibold text-purple-600">步骤 4:</span>
+                        <span>上传到本工具，设置行数=2，列数=3，一键生成 GIF！</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg p-4 border border-purple-100">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-semibold text-sm">📋 AI Prompt（点击复制）</h3>
+                    <button onclick="copyPrompt()" class="text-xs bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded transition">
+                        复制 Prompt
+                    </button>
+                </div>
+                <pre id="aiPrompt" class="text-xs bg-gray-50 p-3 rounded border border-gray-200 overflow-x-auto whitespace-pre-wrap">你现在的任务：根据我上传的这张贴纸角色，生成一组可循环播放的"帧动画"图片，用于制作 GIF。
+
+要求如下：
+1. 保持角色样式、线条、颜色、光影与原图完全一致，不能改变画风。
+2. 生成 6 张独立图片，每张作为一帧。
+3. 动作主题：可爱挥手 + 星星闪烁
+4. 帧细节要求：
+   - 帧1：原图姿势（基准帧）
+   - 帧2：右手向上抖动 2～3 像素
+   - 帧3：右手向下抖动 2～3 像素
+   - 帧4：星星亮度稍微增强（更发光）
+   - 帧5：星星亮度下降一点（准备回到普通状态）
+   - 帧6：回到与帧1一致（闭环：适合循环）
+5. 面部表情保持一致，不要被模型自动修改。
+6. 不要改变构图、文字、背景透明度和角色大小。
+7. 输出时，请把 6 张图片排列成 2 行 3 列的网格，合并为一张图片输出。
+8. 整体动作幅度控制在细微变化的"可爱动效"范围，用于 Loop 动图。
+9. 背景为纯白色
+
+严格按照以上要求生成帧动画网格图片。</pre>
             </div>
         </div>
     </div>
@@ -864,6 +929,26 @@
 
             // Scroll to the slice section
             slicesResultContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Copy AI Prompt
+        function copyPrompt() {
+            const promptText = document.getElementById('aiPrompt').textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ 已复制';
+                btn.classList.add('bg-green-500');
+                btn.classList.remove('bg-purple-500');
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-green-500');
+                    btn.classList.add('bg-purple-500');
+                }, 2000);
+            }).catch(err => {
+                alert('复制失败，请手动复制');
+            });
         }
     </script>
 </body>
