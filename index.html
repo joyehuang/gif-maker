@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表情包切分合成工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 gifshot 库用于生成 GIF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* 预览区域的背景，稍微深一点以便看清透明效果 */
+        .canvas-container {
+            background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%, transparent 75%, #e5e7eb 75%, #e5e7eb),
+            linear-gradient(45deg, #e5e7eb 25%, transparent 25%, transparent 75%, #e5e7eb 75%, #e5e7eb);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            background-color: #fff;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            margin-top: -6px;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #d1d5db;
+            border-radius: 2px;
+        }
+        .crosshair-cursor {
+            cursor: crosshair !important;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-10 px-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-5xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2 text-center">🧩 表情包切分合成器</h1>
+        <p class="text-gray-500 text-center mb-8">支持自动切分 + 智能去除背景，生成 GIF 或 导出静态图！</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- 左侧：设置与上传 -->
+            <div class="space-y-6">
+                
+                <!-- 上传区域 -->
+                <div class="border-2 border-dashed border-blue-300 rounded-xl p-6 text-center hover:bg-blue-50 transition cursor-pointer relative group" id="dropZone">
+                    <input type="file" id="imageInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="text-blue-500 group-hover:scale-105 transition-transform duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p class="font-semibold">点击上传图片</p>
+                        <p class="text-xs text-gray-400 mt-1">支持 JPG, PNG (自动识别尺寸)</p>
+                    </div>
+                </div>
+
+                <!-- 基础参数控制 -->
+                <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                    <h3 class="font-bold text-gray-700 border-b pb-2 flex items-center">
+                        <span>⚙️ 基础设置</span>
+                    </h3>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">行数 (Rows)</label>
+                            <input type="number" id="rowsInput" value="3" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">列数 (Cols)</label>
+                            <input type="number" id="colsInput" value="4" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            播放速度 (每帧间隔: <span id="intervalDisplay">200</span>ms)
+                        </label>
+                        <input type="range" id="speedInput" min="50" max="1000" step="10" value="200" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- 抠图设置 -->
+                <div class="bg-blue-50 p-4 rounded-lg space-y-3 border border-blue-100">
+                    <div class="flex justify-between items-center border-b border-blue-200 pb-2">
+                        <h3 class="font-bold text-blue-800 flex items-center gap-1">
+                            🎨 智能抠图 (去背景)
+                        </h3>
+                        <button id="resetColorsBtn" class="text-xs text-blue-600 underline hover:text-blue-800">重置颜色</button>
+                    </div>
+                    
+                    <p class="text-xs text-blue-600 mb-2">
+                        如果背景是棋盘格(灰白方块)，请分别吸取<span class="font-bold">灰色</span>和<span class="font-bold">白色</span>两种颜色。
+                    </p>
+
+                    <div class="flex items-center gap-3">
+                        <button id="pickColorBtn" class="flex-1 bg-white border border-blue-300 hover:bg-blue-100 text-blue-700 py-2 px-3 rounded shadow-sm text-sm font-medium flex items-center justify-center gap-2 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                            </svg>
+                            <span id="pickBtnText">点击吸取背景色</span>
+                        </button>
+                    </div>
+
+                    <!-- 已选颜色展示 -->
+                    <div id="selectedColorsContainer" class="flex flex-wrap gap-2 min-h-[24px]">
+                        <!-- 动态生成的颜色块 -->
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-blue-800 mb-1 flex justify-between">
+                            <span>颜色容差 (Tolerance)</span>
+                            <span id="toleranceDisplay" class="text-blue-600">15</span>
+                        </label>
+                        <input type="range" id="toleranceInput" min="0" max="100" step="1" value="15" class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- 输出设置 -->
+                <div class="bg-gray-50 p-4 rounded-lg space-y-2">
+                     <label class="block text-sm font-medium text-gray-700 mb-1">
+                        🖼️ 生成背景颜色
+                    </label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="bgColor" value="transparent" checked class="text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm text-gray-700">透明 (默认)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="bgColor" value="white" class="text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm text-gray-700">白色 (纯白底)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 操作按钮组 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <button id="generateSlicesBtn" disabled class="bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition duration-200 flex items-center justify-center gap-2 transform active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clip-rule="evenodd" />
+                        </svg>
+                        <span>✂️ 生成静态分图</span>
+                    </button>
+                    <button id="generateBtn" disabled class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition duration-200 flex items-center justify-center gap-2 transform active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                        </svg>
+                        <span>生成动图 GIF</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧：预览 -->
+            <div class="flex flex-col items-center justify-start space-y-4 bg-gray-50 p-6 rounded-xl border border-gray-200 relative">
+                <h3 class="font-bold text-gray-700 self-start">📺 效果预览</h3>
+                
+                <!-- 预览画布容器 -->
+                <div id="canvasWrapper" class="relative canvas-container border border-gray-300 rounded shadow-inner flex items-center justify-center overflow-hidden cursor-default transition-colors" style="min-height: 250px; width: 100%;">
+                    <canvas id="previewCanvas" class="max-w-full max-h-[300px] z-10 relative"></canvas>
+                    <div id="placeholderText" class="absolute text-gray-400 text-sm z-0">暂无预览</div>
+                    
+                    <!-- 吸管工具提示层 -->
+                    <div id="pickerOverlay" class="absolute inset-0 z-20 hidden pointer-events-none flex items-center justify-center bg-black bg-opacity-10">
+                        <span class="bg-black text-white px-2 py-1 rounded text-xs opacity-75">点击画面选取颜色</span>
+                    </div>
+                </div>
+
+                <div id="resultContainer" class="hidden w-full space-y-3 pt-4 border-t border-gray-200 animate-fade-in">
+                    <h3 class="font-bold text-green-600 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        GIF 生成成功!
+                    </h3>
+                    <div class="flex justify-center bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAKQCAYAAAB24j9AAAAA')] p-2 border rounded canvas-container">
+                        <img id="resultImage" class="max-w-full h-auto object-contain" alt="生成的GIF" />
+                    </div>
+                    <a id="downloadLink" download="sticker.gif" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition shadow">
+                        📥 下载 GIF
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 静态切片结果区域 -->
+        <div id="slicesResultContainer" class="mt-8 w-full hidden animate-fade-in">
+             <div class="flex items-center justify-between border-b pb-2 mb-4">
+                 <h3 class="font-bold text-gray-800 text-xl flex items-center gap-2">
+                    📂 静态切片下载 (共 <span id="sliceCount">0</span> 张)
+                 </h3>
+                 <span class="text-xs text-green-700 bg-green-100 px-2 py-1 rounded border border-green-200 font-medium">
+                    ✅ 已应用当前背景/抠图设置
+                 </span>
+             </div>
+             <div id="slicesGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
+                 <!-- 动态生成的切片会放在这里 -->
+             </div>
+        </div>
+
+        <!-- 调试信息/原图缩略 -->
+        <div class="mt-8 border-t pt-4 w-full">
+            <p class="text-sm text-gray-500 mb-2">原始图片切分参考 (用于确认行列设置是否正确):</p>
+            <div class="relative inline-block border border-blue-200 rounded overflow-hidden bg-white">
+                <img id="sourceImage" class="max-h-32 opacity-50 block" />
+                <div id="gridOverlay" class="absolute inset-0 pointer-events-none"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // DOM Elements
+        const imageInput = document.getElementById('imageInput');
+        const rowsInput = document.getElementById('rowsInput');
+        const colsInput = document.getElementById('colsInput');
+        const speedInput = document.getElementById('speedInput');
+        const intervalDisplay = document.getElementById('intervalDisplay');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const ctx = previewCanvas.getContext('2d', { willReadFrequently: true });
+        const generateBtn = document.getElementById('generateBtn');
+        const generateSlicesBtn = document.getElementById('generateSlicesBtn');
+        const sourceImage = document.getElementById('sourceImage');
+        const gridOverlay = document.getElementById('gridOverlay');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultImage = document.getElementById('resultImage');
+        const downloadLink = document.getElementById('downloadLink');
+        const placeholderText = document.getElementById('placeholderText');
+        const canvasWrapper = document.getElementById('canvasWrapper');
+        const bgColorRadios = document.getElementsByName('bgColor');
+        
+        // Slices Elements
+        const slicesResultContainer = document.getElementById('slicesResultContainer');
+        const slicesGrid = document.getElementById('slicesGrid');
+        const sliceCount = document.getElementById('sliceCount');
+
+        // Matting UI Elements
+        const pickColorBtn = document.getElementById('pickColorBtn');
+        const pickBtnText = document.getElementById('pickBtnText');
+        const resetColorsBtn = document.getElementById('resetColorsBtn');
+        const selectedColorsContainer = document.getElementById('selectedColorsContainer');
+        const toleranceInput = document.getElementById('toleranceInput');
+        const toleranceDisplay = document.getElementById('toleranceDisplay');
+
+        // State
+        let loadedImage = null;
+        let animationId = null;
+        let frames = []; 
+        let currentFrameIndex = 0;
+        let isPickingColor = false;
+        let transparentColors = []; // Array of {r, g, b}
+        let tolerance = 15;
+        let isSlicesVisible = false;
+
+        // Init Events
+        imageInput.addEventListener('change', handleImageUpload);
+        rowsInput.addEventListener('input', updateConfig);
+        colsInput.addEventListener('input', updateConfig);
+        
+        speedInput.addEventListener('input', (e) => {
+            intervalDisplay.textContent = e.target.value;
+            if (frames.length > 0) startPreview(); 
+        });
+
+        generateBtn.addEventListener('click', generateGIF);
+        generateSlicesBtn.addEventListener('click', () => {
+            isSlicesVisible = true;
+            generateSlices();
+        });
+
+        // Matting Events
+        pickColorBtn.addEventListener('click', toggleColorPicker);
+        resetColorsBtn.addEventListener('click', () => {
+            transparentColors = [];
+            renderSelectedColors();
+            updateConfig();
+        });
+        toleranceInput.addEventListener('input', (e) => {
+            tolerance = parseInt(e.target.value);
+            toleranceDisplay.innerText = tolerance;
+            updateConfig(); // Re-process image immediately
+        });
+
+        // Bg Color Change Event
+        Array.from(bgColorRadios).forEach(radio => {
+            radio.addEventListener('change', updateConfig);
+        });
+        
+        // Canvas Click for Color Picking
+        previewCanvas.addEventListener('mousedown', (e) => {
+            if (!isPickingColor || !loadedImage) return;
+            
+            // Get coordinates
+            const rect = previewCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Scale coords to canvas actual size
+            const scaleX = previewCanvas.width / rect.width;
+            const scaleY = previewCanvas.height / rect.height;
+            const canvasX = Math.floor(x * scaleX);
+            const canvasY = Math.floor(y * scaleY);
+            
+            // Get pixel color
+            const pixel = ctx.getImageData(canvasX, canvasY, 1, 1).data;
+            const color = { r: pixel[0], g: pixel[1], b: pixel[2] };
+            
+            addColorToRemove(color);
+            toggleColorPicker(); // Auto turn off picker after one pick
+        });
+
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    loadedImage = img;
+                    sourceImage.src = img.src;
+                    sourceImage.style.opacity = '1';
+                    placeholderText.style.display = 'none';
+                    generateBtn.disabled = false;
+                    generateSlicesBtn.disabled = false;
+                    resultContainer.classList.add('hidden');
+                    slicesResultContainer.classList.add('hidden');
+                    isSlicesVisible = false;
+                    
+                    // Reset matting state
+                    transparentColors = [];
+                    renderSelectedColors();
+                    
+                    updateConfig(); 
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function toggleColorPicker() {
+            isPickingColor = !isPickingColor;
+            if (isPickingColor) {
+                pickBtnText.innerText = "正在吸取...请点击预览图";
+                pickColorBtn.classList.add('bg-blue-100', 'ring-2', 'ring-blue-400');
+                canvasWrapper.classList.add('crosshair-cursor');
+                previewCanvas.classList.add('crosshair-cursor');
+            } else {
+                pickBtnText.innerText = "🖊️ 点击吸取背景色";
+                pickColorBtn.classList.remove('bg-blue-100', 'ring-2', 'ring-blue-400');
+                canvasWrapper.classList.remove('crosshair-cursor');
+                previewCanvas.classList.remove('crosshair-cursor');
+            }
+        }
+
+        function addColorToRemove(color) {
+            const exists = transparentColors.some(c => 
+                Math.abs(c.r - color.r) < 5 && 
+                Math.abs(c.g - color.g) < 5 && 
+                Math.abs(c.b - color.b) < 5
+            );
+            
+            if (!exists) {
+                transparentColors.push(color);
+                renderSelectedColors();
+                updateConfig(); // Re-slice
+            }
+        }
+
+        function renderSelectedColors() {
+            selectedColorsContainer.innerHTML = '';
+            transparentColors.forEach((color, index) => {
+                const badge = document.createElement('div');
+                badge.className = 'flex items-center gap-1 bg-white border border-gray-300 rounded-full px-2 py-1 shadow-sm';
+                
+                const swatch = document.createElement('div');
+                swatch.className = 'w-4 h-4 rounded-full border border-gray-200';
+                swatch.style.backgroundColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '&times;';
+                closeBtn.className = 'text-gray-500 hover:text-red-500 font-bold ml-1 leading-none';
+                closeBtn.onclick = () => {
+                    transparentColors.splice(index, 1);
+                    renderSelectedColors();
+                    updateConfig();
+                };
+
+                badge.appendChild(swatch);
+                badge.appendChild(closeBtn);
+                selectedColorsContainer.appendChild(badge);
+            });
+        }
+
+        function getSelectedBgColor() {
+            for (const radio of bgColorRadios) {
+                if (radio.checked) return radio.value;
+            }
+            return 'transparent';
+        }
+
+        function updateConfig() {
+            if (!loadedImage) return;
+            drawGridOverlay();
+            sliceImage();
+            startPreview();
+            
+            // If slices are already shown, update them in real-time
+            if (isSlicesVisible) {
+                generateSlices();
+            }
+        }
+
+        function drawGridOverlay() {
+            const rows = parseInt(rowsInput.value) || 1;
+            const cols = parseInt(colsInput.value) || 1;
+            gridOverlay.style.display = 'grid';
+            gridOverlay.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            gridOverlay.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            gridOverlay.innerHTML = '';
+            for (let i = 0; i < rows * cols; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'border border-blue-500 border-opacity-50 box-border text-xs text-blue-600 flex items-center justify-center font-bold bg-blue-100 bg-opacity-10';
+                cell.innerText = i + 1;
+                gridOverlay.appendChild(cell);
+            }
+        }
+
+        function sliceImage() {
+            frames = [];
+            const rows = parseInt(rowsInput.value);
+            const cols = parseInt(colsInput.value);
+            const frameW = Math.floor(loadedImage.width / cols);
+            const frameH = Math.floor(loadedImage.height / rows);
+            const bgColor = getSelectedBgColor();
+
+            previewCanvas.width = frameW;
+            previewCanvas.height = frameH;
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = frameW;
+            tempCanvas.height = frameH;
+            const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    // 1. Prepare Background
+                    tempCtx.clearRect(0, 0, frameW, frameH);
+                    
+                    // If user wants white background (and image is PNG transparent), fill white first
+                    if (bgColor === 'white') {
+                        tempCtx.fillStyle = '#ffffff';
+                        tempCtx.fillRect(0, 0, frameW, frameH);
+                    }
+
+                    // 2. Draw Image
+                    tempCtx.drawImage(loadedImage, c * frameW, r * frameH, frameW, frameH, 0, 0, frameW, frameH);
+                    
+                    // 3. Apply Matting (Remove Background colors)
+                    // If 'white' mode is selected, we replace matting color with white instead of transparency
+                    if (transparentColors.length > 0) {
+                        applyMatting(tempCtx, frameW, frameH, bgColor);
+                    }
+
+                    frames.push(tempCanvas.toDataURL('image/png'));
+                }
+            }
+        }
+
+        function applyMatting(ctx, width, height, bgColor) {
+            const imageData = ctx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+            const len = data.length;
+            const limit = tolerance * tolerance * 3; 
+
+            for (let i = 0; i < len; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                // const a = data[i + 3];
+
+                // Check against all target colors
+                for (let j = 0; j < transparentColors.length; j++) {
+                    const target = transparentColors[j];
+                    const dr = r - target.r;
+                    const dg = g - target.g;
+                    const db = b - target.b;
+                    
+                    if ((dr * dr + dg * dg + db * db) <= limit) {
+                        if (bgColor === 'white') {
+                            // If user wants white bg, turn this pixel white
+                            data[i] = 255;     // R
+                            data[i + 1] = 255; // G
+                            data[i + 2] = 255; // B
+                            data[i + 3] = 255; // A (Fully Opaque)
+                        } else {
+                            // Default: Transparent
+                            data[i + 3] = 0; 
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        function startPreview() {
+            if (animationId) clearInterval(animationId);
+            if (frames.length === 0) return;
+
+            currentFrameIndex = 0;
+            const interval = parseInt(speedInput.value);
+
+            drawFrame(0);
+
+            animationId = setInterval(() => {
+                currentFrameIndex = (currentFrameIndex + 1) % frames.length;
+                drawFrame(currentFrameIndex);
+            }, interval);
+        }
+
+        function drawFrame(index) {
+            const img = new Image();
+            img.onload = () => {
+                ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                // If previewing white background, fill white first for clarity (though image data already has it)
+                // Actually the image data in 'frames' already has the background baked in.
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = frames[index];
+        }
+
+        function generateGIF() {
+            if (frames.length === 0) return;
+
+            const btnOriginalText = generateBtn.innerHTML;
+            generateBtn.innerHTML = '<span>⏳ 正在生成...</span>';
+            generateBtn.disabled = true;
+            generateSlicesBtn.disabled = true;
+
+            const interval = parseInt(speedInput.value) / 1000;
+
+            gifshot.createGIF({
+                'images': frames,
+                'interval': interval,
+                'gifWidth': previewCanvas.width,
+                'gifHeight': previewCanvas.height,
+                'numFrames': frames.length,
+                'frameDuration': 1, 
+                'sampleInterval': 10 
+            }, function(obj) {
+                if(!obj.error) {
+                    const image = obj.image;
+                    resultImage.src = image;
+                    downloadLink.href = image;
+                    resultContainer.classList.remove('hidden');
+                    // Hide slices if open to avoid clutter? Or keep both open? Keep both.
+                    resultContainer.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert("生成GIF失败，请重试");
+                }
+                
+                generateBtn.innerHTML = btnOriginalText;
+                generateBtn.disabled = false;
+                generateSlicesBtn.disabled = false;
+            });
+        }
+
+        function generateSlices() {
+            if (frames.length === 0) return;
+            
+            slicesGrid.innerHTML = '';
+            sliceCount.innerText = frames.length;
+            slicesResultContainer.classList.remove('hidden');
+
+            frames.forEach((frameData, index) => {
+                // Create container for each slice
+                const item = document.createElement('div');
+                item.className = "flex flex-col items-center p-3 bg-white border rounded shadow-sm hover:shadow-md transition";
+                
+                // Image
+                const img = document.createElement('img');
+                img.src = frameData;
+                img.className = "w-full h-auto object-contain mb-2 canvas-container border border-gray-100 rounded";
+                
+                // Download Button
+                const link = document.createElement('a');
+                link.href = frameData;
+                link.download = `sticker_${index + 1}.png`;
+                link.className = "text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1 rounded transition font-medium w-full text-center";
+                link.innerText = "⬇️ 下载";
+
+                item.appendChild(img);
+                item.appendChild(link);
+                slicesGrid.appendChild(item);
+            });
+
+            // Scroll to the slice section
+            slicesResultContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
