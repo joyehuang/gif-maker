@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>表情包切分合成工具</title>
+    <!-- DaisyUI + Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 gifshot 库用于生成 GIF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
@@ -145,37 +147,51 @@
 
     <!-- 标题区域 -->
     <div class="text-center mb-10 max-w-3xl">
-        <h1 class="text-4xl font-bold mb-3">表情包切分合成工具</h1>
-        <p class="text-lg text-muted">
+        <div class="flex justify-center items-center gap-3 mb-3">
+            <span class="text-5xl">🎨</span>
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                表情包切分合成工具
+            </h1>
+        </div>
+        <p class="text-lg opacity-90">
             支持拖拽上传 · 智能去背景 · 一键生成 GIF
         </p>
+        <div class="flex justify-center gap-2 mt-4">
+            <div class="badge badge-primary badge-lg">免费</div>
+            <div class="badge badge-secondary badge-lg">无需登录</div>
+            <div class="badge badge-accent badge-lg">纯前端</div>
+        </div>
     </div>
 
     <!-- 作品展示区 -->
     <div class="mb-12 w-full max-w-5xl">
-        <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold mb-2">✨ 作品展示</h2>
-            <p class="text-sm text-muted">看看用这个工具制作的表情包</p>
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold mb-2">✨ 作品展示</h2>
+            <p class="text-base-content/70">看看用这个工具制作的表情包</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- 示例 1 -->
-            <div class="example-card bg-white rounded-xl overflow-hidden shadow-sm border border-color">
-                <div class="canvas-container p-6 flex items-center justify-center min-h-[280px]">
-                    <img src="examples/example1.gif" alt="示例 GIF 1" class="max-w-full max-h-[260px] object-contain">
-                </div>
-                <div class="p-3 border-t border-color bg-muted">
-                    <p class="text-sm font-medium text-muted">动态表情包示例 #1</p>
+            <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+                <figure class="px-6 pt-6">
+                    <div class="canvas-container rounded-xl flex items-center justify-center min-h-[280px]">
+                        <img src="examples/example1.gif" alt="示例 GIF 1" class="max-w-full max-h-[260px] object-contain">
+                    </div>
+                </figure>
+                <div class="card-body">
+                    <h3 class="card-title text-sm">动态表情包示例 #1</h3>
                 </div>
             </div>
 
             <!-- 示例 2 -->
-            <div class="example-card bg-white rounded-xl overflow-hidden shadow-sm border border-color">
-                <div class="canvas-container p-6 flex items-center justify-center min-h-[280px]">
-                    <img src="examples/example2.gif" alt="示例 GIF 2" class="max-w-full max-h-[260px] object-contain">
-                </div>
-                <div class="p-3 border-t border-color bg-muted">
-                    <p class="text-sm font-medium text-muted">动态表情包示例 #2</p>
+            <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+                <figure class="px-6 pt-6">
+                    <div class="canvas-container rounded-xl flex items-center justify-center min-h-[280px]">
+                        <img src="examples/example2.gif" alt="示例 GIF 2" class="max-w-full max-h-[260px] object-contain">
+                    </div>
+                </figure>
+                <div class="card-body">
+                    <h3 class="card-title text-sm">动态表情包示例 #2</h3>
                 </div>
             </div>
         </div>
@@ -218,10 +234,10 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg p-4 border border-purple-100">
+            <div class="bg-base-100 rounded-lg p-4 border border-purple-200">
                 <div class="flex justify-between items-center mb-2">
                     <h3 class="font-semibold text-sm">📋 AI Prompt（点击复制）</h3>
-                    <button onclick="copyPrompt()" class="text-xs bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded transition">
+                    <button onclick="copyPrompt()" class="btn btn-primary btn-sm">
                         复制 Prompt
                     </button>
                 </div>
@@ -251,56 +267,76 @@
 
     <!-- 使用教程 -->
     <div class="mb-10 w-full max-w-5xl">
-        <div class="bg-white rounded-xl shadow-sm border border-color p-6">
-            <h2 class="text-xl font-bold mb-4">📖 使用教程</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <div class="flex gap-3">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-primary">1</div>
-                        <div>
-                            <h3 class="font-semibold mb-1">上传表情包图片</h3>
-                            <p class="text-sm text-muted">点击、拖拽或使用 Ctrl+V 粘贴你的表情包原图（通常是多格拼在一起的图片）</p>
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title text-2xl mb-6">📖 使用教程</h2>
+
+                <ul class="steps steps-vertical lg:steps-horizontal w-full mb-6">
+                    <li class="step step-primary">上传图片</li>
+                    <li class="step step-primary">设置行列</li>
+                    <li class="step step-primary">调整速度</li>
+                    <li class="step">去背景</li>
+                    <li class="step">生成下载</li>
+                </ul>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div class="alert alert-info">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div>
+                                <h3 class="font-bold">上传表情包图片</h3>
+                                <div class="text-xs">点击、拖拽或使用 Ctrl+V 粘贴你的表情包原图</div>
+                            </div>
+                        </div>
+
+                        <div class="alert">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div>
+                                <h3 class="font-bold">设置行列数</h3>
+                                <div class="text-xs">根据你的图片设置正确的行数和列数</div>
+                            </div>
+                        </div>
+
+                        <div class="alert">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div>
+                                <h3 class="font-bold">调整播放速度</h3>
+                                <div class="text-xs">拖动滑块调整 GIF 的播放速度</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex gap-3">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-primary">2</div>
-                        <div>
-                            <h3 class="font-semibold mb-1">设置行列数</h3>
-                            <p class="text-sm text-muted">根据你的图片设置正确的行数和列数，预览区会实时显示切分效果</p>
+                    <div class="space-y-4">
+                        <div class="alert alert-warning">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <h3 class="font-bold">智能去背景（可选）</h3>
+                                <div class="text-xs">点击"吸取背景色"按钮，然后点击预览图中的背景部分</div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex gap-3">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-primary">3</div>
-                        <div>
-                            <h3 class="font-semibold mb-1">调整播放速度</h3>
-                            <p class="text-sm text-muted">拖动滑块调整 GIF 的播放速度，数值越小播放越快</p>
+
+                        <div class="alert alert-success">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div>
+                                <h3 class="font-bold">生成并下载</h3>
+                                <div class="text-xs">点击"生成 GIF"或"生成切片"下载结果</div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="space-y-4">
-                    <div class="flex gap-3">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-primary">4</div>
-                        <div>
-                            <h3 class="font-semibold mb-1">智能去背景（可选）</h3>
-                            <p class="text-sm text-muted">点击"吸取背景色"按钮，然后点击预览图中的背景部分，自动去除背景色</p>
+
+                        <div class="alert alert-warning">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div>
+                                <h3 class="font-bold">💡 小技巧</h3>
+                                <div class="text-xs">如果背景是棋盘格，需要分别吸取灰色和白色两种颜色</div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex gap-3">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-primary">5</div>
-                        <div>
-                            <h3 class="font-semibold mb-1">生成并下载</h3>
-                            <p class="text-sm text-muted">点击"生成 GIF"生成动图，或点击"生成切片"下载所有静态图片</p>
-                        </div>
-                    </div>
-                    <div class="bg-muted rounded-lg p-3 mt-4">
-                        <p class="text-xs text-muted">💡 <strong>小技巧：</strong>如果背景是棋盘格，需要分别吸取灰色和白色两种颜色才能完全去除背景</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="bg-white p-8 rounded-2xl shadow-sm border border-color w-full max-w-5xl">
+    <div class="card bg-base-100 shadow-2xl w-full max-w-5xl">
+        <div class="card-body">
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             
@@ -326,13 +362,17 @@
                     </h3>
                     
                     <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">行数 (Rows)</label>
-                            <input type="number" id="rowsInput" value="3" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-medium">行数 (Rows)</span>
+                            </label>
+                            <input type="number" id="rowsInput" value="3" min="1" class="input input-bordered w-full">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">列数 (Cols)</label>
-                            <input type="number" id="colsInput" value="4" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-medium">列数 (Cols)</span>
+                            </label>
+                            <input type="number" id="colsInput" value="4" min="1" class="input input-bordered w-full">
                         </div>
                     </div>
 
@@ -399,17 +439,17 @@
 
                 <!-- 操作按钮组 -->
                 <div class="grid grid-cols-2 gap-4">
-                    <button id="generateSlicesBtn" disabled class="btn-primary disabled:cursor-not-allowed font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2">
+                    <button id="generateSlicesBtn" disabled class="btn btn-secondary gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clip-rule="evenodd" />
                         </svg>
-                        <span>生成切片</span>
+                        生成切片
                     </button>
-                    <button id="generateBtn" disabled class="btn-primary disabled:cursor-not-allowed font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2">
+                    <button id="generateBtn" disabled class="btn btn-primary gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                         </svg>
-                        <span>生成 GIF</span>
+                        生成 GIF
                     </button>
                 </div>
             </div>
@@ -471,6 +511,7 @@
             </div>
         </div>
 
+        </div>
     </div>
 
     <!-- 页脚 -->
@@ -955,13 +996,13 @@
             const btn = document.querySelector('button[onclick="copyPrompt()"]');
             const originalText = btn.textContent;
             btn.textContent = '✓ 已复制';
-            btn.classList.add('bg-green-500');
-            btn.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-success');
 
             setTimeout(() => {
                 btn.textContent = originalText;
-                btn.classList.remove('bg-green-500');
-                btn.classList.add('bg-purple-500', 'hover:bg-purple-600');
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-primary');
             }, 2000);
         }
 
