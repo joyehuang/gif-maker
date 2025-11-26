@@ -271,62 +271,75 @@
             <div class="card-body">
                 <h2 class="card-title text-2xl mb-6">📖 使用教程</h2>
 
-                <ul class="steps steps-vertical lg:steps-horizontal w-full mb-6">
-                    <li class="step step-primary">上传图片</li>
-                    <li class="step step-primary">设置行列</li>
-                    <li class="step step-primary">调整速度</li>
-                    <li class="step">去背景</li>
-                    <li class="step">生成下载</li>
-                </ul>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-4">
-                        <div class="alert alert-info">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <div>
-                                <h3 class="font-bold">上传表情包图片</h3>
-                                <div class="text-xs">点击、拖拽或使用 Ctrl+V 粘贴你的表情包原图</div>
-                            </div>
-                        </div>
-
-                        <div class="alert">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <div>
-                                <h3 class="font-bold">设置行列数</h3>
-                                <div class="text-xs">根据你的图片设置正确的行数和列数</div>
-                            </div>
-                        </div>
-
-                        <div class="alert">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <div>
-                                <h3 class="font-bold">调整播放速度</h3>
-                                <div class="text-xs">拖动滑块调整 GIF 的播放速度</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="card bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
+                        <div class="card-body p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="badge badge-primary badge-lg">1</div>
+                                <div>
+                                    <h3 class="font-bold text-sm mb-1">上传表情包图片</h3>
+                                    <p class="text-xs opacity-80">点击、拖拽或使用 Ctrl+V 粘贴你的表情包原图</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="space-y-4">
-                        <div class="alert alert-warning">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                            <div>
-                                <h3 class="font-bold">智能去背景（可选）</h3>
-                                <div class="text-xs">点击"吸取背景色"按钮，然后点击预览图中的背景部分</div>
+
+                    <div class="card bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200">
+                        <div class="card-body p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="badge badge-secondary badge-lg">2</div>
+                                <div>
+                                    <h3 class="font-bold text-sm mb-1">设置行列数</h3>
+                                    <p class="text-xs opacity-80">根据你的图片设置正确的行数和列数</p>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="alert alert-success">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <div>
-                                <h3 class="font-bold">生成并下载</h3>
-                                <div class="text-xs">点击"生成 GIF"或"生成切片"下载结果</div>
+                    <div class="card bg-gradient-to-br from-pink-50 to-pink-100 border border-pink-200">
+                        <div class="card-body p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="badge badge-accent badge-lg">3</div>
+                                <div>
+                                    <h3 class="font-bold text-sm mb-1">调整播放速度</h3>
+                                    <p class="text-xs opacity-80">拖动滑块调整 GIF 的播放速度</p>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="alert alert-warning">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <div>
-                                <h3 class="font-bold">💡 小技巧</h3>
-                                <div class="text-xs">如果背景是棋盘格，需要分别吸取灰色和白色两种颜色</div>
+                    <div class="card bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200">
+                        <div class="card-body p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="badge badge-warning badge-lg">4</div>
+                                <div>
+                                    <h3 class="font-bold text-sm mb-1">智能去背景（可选）</h3>
+                                    <p class="text-xs opacity-80">点击"吸取背景色"按钮，然后点击预览图</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-gradient-to-br from-green-50 to-green-100 border border-green-200">
+                        <div class="card-body p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="badge badge-success badge-lg">5</div>
+                                <div>
+                                    <h3 class="font-bold text-sm mb-1">生成并下载</h3>
+                                    <p class="text-xs opacity-80">点击"生成 GIF"或"生成切片"下载结果</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200">
+                        <div class="card-body p-4">
+                            <div class="flex items-start gap-3">
+                                <span class="text-xl">💡</span>
+                                <div>
+                                    <h3 class="font-bold text-sm mb-1">小技巧</h3>
+                                    <p class="text-xs opacity-80">棋盘格背景需要分别吸取灰色和白色</p>
+                                </div>
                             </div>
                         </div>
                     </div>
